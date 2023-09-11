@@ -1,0 +1,153 @@
+Homework 0
+==========
+
+- CSCI 599, Fall 2023: An Introduction to Programming Languages
+- Mukund Raghothaman
+- Due: 10pm PT on 31 August, 2023
+
+%%%%
+
+- Your name: Vineet Agarwal 
+- Your partner's name (if any): __________
+
+%%%%
+
+Instructions
+------------
+
+1. Homework 0 is ungraded. Its primary purpose is for me to better understand your background, and
+   make sure to appropriately target the course.
+2. Please feel free to collaborate with a partner, but make sure to write your submission
+   individually.
+3. Add your responses to this file. Rename it to HW0-Yourname.txt, and upload it to Blackboard.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+1. Describe your previous experience with programming.
+   - What previous relevant courses have you taken, either at USC or elsewhere?
+   I have taken the following courses:
+     @USC:
+        * CSCI 455
+        * CSCI 585
+        * CSCI 571
+   - What languages do you know?
+        * Python
+        * Java
+        * Javascript
+        * Kotlin
+        * C
+        * C++
+   - How familiar are you with getting a computer to do what you want?
+   I am quite familiar with getting a computer to do what I want.
+
+%%%%
+
+2. What are you hoping to learn from this course?
+I am hoping to get a new outlook on programming. I want to understand the functional programming paradigm
+and dive into how a language works and why it was made that way.
+
+%%%%
+
+3. Examine the following C programs.
+
+   // Program P1
+   #include <stdio.h>
+   int main() {
+       int x = 0;
+       for (int y = 0; y < 10; y++) {
+           x = x + y;
+           printf("%d\n", x);
+       }
+       return 0;
+   }
+
+   // Program P2
+   #include <stdio.h>
+   int main() {
+       int x = 0;
+       for (int y = 0; y < 10; y++) {
+           int x = x + y;
+           printf("%d\n", x);
+       }
+       return 0;
+   }
+
+   a. Why / how are they different?
+   The first program should print the sum of all the previous numbers from 0-9.
+   The second program should print the value of y in each loop.
+   b. Now compile the program using your favourite C compiler, and observe the output. Is the
+      difference identical to what you observed?
+   The output for the first program was as expected.
+   For the second program the value printed was some random value of x + the value of y in that loop.
+
+%%%%
+
+4. Consider the following fragment of C code.
+
+   // Program P3
+   #include <stdio.h>
+   #include <stdlib.h>
+   int main() {
+       int x = rand() % 10;
+       int y = x > 5 ? x : 5;
+       printf("%d, %d\n", x, y);
+       return 0;
+   }
+
+   a. What is your first impression on reading this code?
+      [ ] I have never seen the funny "?:" syntax before. Might be a syntax error?
+      [ ] I have seen the "?:" syntax before, but I don't recall its meaning
+      [x] I have a concrete understanding of what this code should do
+
+   b. Now run the code through the C compiler. What happened, and did it match your expectation?
+   Yes, it matched my expectation.
+   I expected the code to assign a value of 5 to y if x was less than or equal to 5.
+
+%%%%
+
+5. An important part of becoming a better programmer is to read code. While you do this, I am
+   interested in understanding how you vocalize code.
+
+   Please read the following snippets of code out in English, and transcribe your utterances.
+
+   a. int x = 5;
+   Create integer variable x and assign 5 to it.
+
+   b. int x;
+   Declare integer x.
+      x = 5;
+   Assign 5 to x.
+
+   c. if (x == 5) { printf("%d\n", y); }
+   if value of x equals 5, print y.
+
+   d. if (x = 5) { printf("%d\n", y); }
+   if assigning value of 5 to x is successful, print y.
+
+   e. int x = 5;
+      Create integer variable x and assign 5 to it.
+      x = 3;
+      Assign 5 to variable x.
+      y = x + 2;
+      Assign the value of the expression x+2 to variable y.
+
+   Needless to say, there is no one "correct" answer to this question.
+
+%%%%
+
+6. Setup your programming environment by following the steps outlined in the cheatsheet and on the
+   course webpage.
+
+   a. Were you able to successfully install OCaml?
+   Yes.
+   b. Are you able to run the ocaml and utop commands to drop into a REPL?
+   Yes.
+   c. Are you able to compile programs using ocamlc and ocamlopt?
+   Yes.
+
+%%%%
+
+7. Did you use an LLM for any of the questions above? If so, can you summarize your experience? How
+   did you use it, was it helpful? If not, why not?
+   No, I did not use any LLM for the questions above. I did not see the need to spend more time
+   making the LLM understand the question than what was needed to answer it by myself.
