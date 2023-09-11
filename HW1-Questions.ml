@@ -108,7 +108,14 @@ let _ = (fun f x y -> f y x) ( - ) 2 3
        In the following declaration, replace the call to raise with your implementation. *)
 
 let solveQuad : float -> float -> float -> (float * float) option =
-  fun a b c -> raise NotImplemented
+  fun a b c -> 
+      let discriminant = (b ** 2.) -. (4. *. a *. c) in
+      if (discriminant < 0.) then 
+          let root1 = (-1. *. b) +. discriminant in
+          let root2 = (-1. *. b) -. discriminant in
+          Some (root1, root2)
+      else None
+      
 
 (****)
 (* 2b. For a given initial positive integer value n1, the Collatz sequence n1, n2, n3, ... is
