@@ -17,7 +17,8 @@ let underscore = '_'
 let whitespace = [' ' '\t']+
 let newline = '\n'
 
-let integer = digit+
+let integer = ['-' | digit][digit]*
+let booleans = ["true" | "false"]
 let variable_identifier = [underscore | alphabet][underscore | alphabet | digit]*
 
 rule read =
@@ -28,10 +29,10 @@ rule read =
   | integer { INT(int_of_string(Lexing.lexeme lexbuf)) }
   | variable_identifier { VAR(Lexing.lexeme lexbuf) }
 
+  | booleans { BOOL(bool_of_string(Lexing.lexeme lexbuf)) }
+
   | '+' { PLUS }
   | '-' { MINUS }
-  | "true" { TRUE }
-  | "false" { FALSE }
 
   | '<' { LT }
   | '=' { EQ }
