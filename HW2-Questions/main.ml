@@ -41,8 +41,10 @@ Instructions
 #load "imp.cmo";;
 (* IMPORTANT: Uncomment the next two lines once you have finished creating implexer.mll and
    impparser.mly and build.sh does not produce any errors: *)
-(* #load "impparser.cmo";;
-#load "implexer.cmo";; *)
+(* 
+ *)
+#load "impparser.cmo";;
+#load "implexer.cmo";; 
 
 open Stdlib
 open Imp
@@ -75,10 +77,10 @@ exception NotImplemented
 let rec eval_of_calc : Calc.expr -> int =
   fun e ->
     match e with
-    | Int(c) -> c
-    | Plus(e1, e2) -> eval_of_calc e1 + eval_of_calc e2
-    | Minus(e1, e2) -> eval_of_calc e1 - eval_of_calc e2
-    | Mult(e1, e2) -> eval_of_calc e1 * eval_of_calc e2
+    | Int (c) -> c
+    | Plus (e1, e2) -> eval_of_calc e1 + eval_of_calc e2
+    | Minus (e1, e2) -> eval_of_calc e1 - eval_of_calc e2
+    | Mult (e1, e2) -> eval_of_calc e1 * eval_of_calc e2
 
 (* If your implementation works, then we should be able to evaluate expressions with: *)
 
@@ -144,8 +146,8 @@ let rec aeval (env : env_t) (a : aexp) : int =
         | None -> 0
         | Some v -> v
     )
-    | Plus (e1, e2) -> (aeval env e1) + (aeval env e2) 
-    | Minus (e1, e2) -> (aeval env e1) - (aeval env e2)
+    | Plus (e1, e2) -> aeval env e1 + aeval env e2 
+    | Minus (e1, e2) -> aeval env e1 - aeval env e2
 
   let _ =
   let env0 = empty_env in
@@ -169,27 +171,27 @@ let rec beval (env : env_t) (b : bexp) : bool =
   match b with 
   | Bool(f) -> f 
   | Lt (e1, e2) -> 
-      if (aeval env e1 < aeval env e2) 
+      if aeval env e1 < aeval env e2
       then true 
       else false
   | Leq (e1, e2) -> 
-      if (aeval env e1 <= aeval env e2) 
+      if aeval env e1 <= aeval env e2
       then true 
       else false
   | Eq (e1, e2) -> 
-			if (aeval env e1 = aeval env e2)
+			if aeval env e1 = aeval env e2
 			then true 
 			else false
   | And (b1, b2) -> 
-			if ((beval env b1) && (beval env b2))
+			if beval env b1 && beval env b2
 			then true 
 			else false
   | Or (b1, b2) -> 
-			if ((beval env b1) || (beval env b2))
+			if beval env b1 || beval env b2
 			then true 
 			else false
   | Not (b) -> 
-			if (beval env b)
+			if beval env b
 			then false 
 			else true
 
@@ -221,9 +223,42 @@ let rec beval (env : env_t) (b : bexp) : bool =
 *)
 
 let ceval (c : cmd) : int list =
-  raise NotImplemented
+  let rec eval_helper (c : cmd) (env : env_t) (acc : int list) : int list =
+    match c with
+    (*
+    *)
+    (*
+    | IfElse(condition, cmdiftrue, cmdiffalse) ->
+        if beval env condition then 
+          eval_helper cmdiftrue env acc
+      else 
+        eval_helper cmdiffalse env acc
+    *)
+    | Skip -> acc
+    | Output(a) -> 
+        let result = aeval env a in
+        result :: acc
+    | Asgn(x, a) -> 
+        let v = aeval env a in
+        let new_env = StringMap.add x v env in
+        eval_helper Skip new_env (v :: acc)
+    | Seq(cmd1, cmd2) -> 
+        let result = eval_helper cmd1 env acc 
+        in 
+        eval_helper cmd2 env result
+    | While(condition, cmd) ->
+        let rec loop env acc =
+          if beval env condition then 
+            loop env ((eval_helper c env []) @ acc)
+          else
+            acc
+        in loop env acc
+  in
+  let result = eval_helper c empty_env [] in
+  result
 
-(* let _ =
+
+  let _ =
   let ax = Var "x" in
   let ay = Var "y" in
   let a0 = Int 0 in
@@ -234,7 +269,9 @@ let ceval (c : cmd) : int list =
                     Seq(Output(ax),
                     Seq(Asgn("x", Minus(ax, a1)),
                     Seq(Output(ay), Asgn("y", Plus(ay, a1))))))) in
-  assert (ceval c = [5; 0; 4; 1; 3; 2; 2; 3; 1; 4]) *)
+  assert (ceval c = [5; 0; 4; 1; 3; 2; 2; 3; 1; 4]) 
+  (* 
+  *)
 
 (**************************************************************************************************)
 (* Question 3: Interpreting an Imperative Language, Part 2 (10 + 10 points)

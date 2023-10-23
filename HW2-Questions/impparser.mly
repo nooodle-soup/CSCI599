@@ -46,19 +46,19 @@ cmd1:
   ;
 
 cmd:
-  | LPAREN; cmd; RPAREN							{ $2 }
-  | OUTPUT; aexpr1      							{ Imp.Output($2) }
-  | VAR; ASGN; aexpr1     							{ Imp.Asgn($1, $3) }
-  | SKIP               							{ Imp.Skip}
-  | IF; bexpr3; THEN; cmd; ELSE; cmd; FI { Imp.IfElse($2, $4, $6)}
-  | WHILE; bexpr3; DO; cmd; DONE     { Imp.While($2, $4) }
+  | LPAREN; cmd; RPAREN							      { $2 }
+  | OUTPUT; aexpr1      							    { Imp.Output($2) }
+  | VAR; ASGN; aexpr1     							  { Imp.Asgn($1, $3) }
+  | SKIP               							      { Imp.Skip }
+  | IF; bexpr3; THEN; cmd; ELSE; cmd; FI  { Imp.IfElse($2, $4, $6) }
+  | WHILE; bexpr3; DO; cmd; DONE          { Imp.While($2, $4) }
   (*
   *)
   ;
 
 aexpr1:
   | aexpr { $1 } 
-  | aexpr1; PLUS; aexpr { Imp.Plus($1, $3) }
+  | aexpr1; PLUS; aexpr  { Imp.Plus($1, $3) }
   | aexpr1; MINUS; aexpr { Imp.Minus($1, $3) }
   ;
 
@@ -84,9 +84,9 @@ bexpr1:
 
 bexpr0:
   | bexpr { $1 }
-  | aexpr1; LT; aexpr1 { Imp.Lt($1, $3) }
+  | aexpr1; LT; aexpr1  { Imp.Lt($1, $3) }
   | aexpr1; LEQ; aexpr1 { Imp.Leq($1, $3) }
-  | aexpr1; EQ; aexpr1 { Imp.Eq($1, $3) }
+  | aexpr1; EQ; aexpr1  { Imp.Eq($1, $3) }
   ;
 
 bexpr:
