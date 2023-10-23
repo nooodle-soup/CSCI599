@@ -171,7 +171,13 @@ let rec beval (env : env_t) (b : bexp) : bool =
   match b with 
   | Bool(f) -> f 
   | Lt (e1, e2) -> 
-      if aeval env e1 < aeval env e2
+      print_endline "in lt";
+      let aeval_e1 = aeval env e1 in
+      print_endline (string_of_int aeval_e1);
+      let aeval_e2 = aeval env e2 in
+      print_endline (string_of_int aeval_e2);
+      let eval_res = aeval_e1 < aeval_e2 in
+      if eval_res 
       then true 
       else false
   | Leq (e1, e2) -> 
@@ -223,41 +229,47 @@ let rec beval (env : env_t) (b : bexp) : bool =
 *)
 
 let ceval (c : cmd) : int list =
-  let rec eval_helper (c : cmd) (env : env_t) (acc : int list) : int list =
-    match c with
-    (*
-    *)
-    (*
-    | IfElse(condition, cmdiftrue, cmdiffalse) ->
-        if beval env condition then 
-          eval_helper cmdiftrue env acc
-      else 
-        eval_helper cmdiffalse env acc
-    *)
-    | Skip -> acc
-    | Output(a) -> 
-        let result = aeval env a in
-        result :: acc
-    | Asgn(x, a) -> 
-        let v = aeval env a in
-        let new_env = StringMap.add x v env in
-        eval_helper Skip new_env (v :: acc)
-    | Seq(cmd1, cmd2) -> 
-        let result = eval_helper cmd1 env acc 
-        in 
-        eval_helper cmd2 env result
-    | While(condition, cmd) ->
-        let rec loop env acc =
-          if beval env condition then 
-            loop env ((eval_helper c env []) @ acc)
+    let rec ceval_exec_helper (env : env_t) (c : cmd) : int list * env_t =
+      match c with
+      | Output(e) -> 
+          let eval_result = aeval env e in
+          print_endline (string_of_int eval_result); 
+          ([eval_result], env)
+      | Asgn(s, e) ->
+          let value = aeval env e in
+          let new_env = StringMap.add s value env in
+          ceval_exec_helper new_env Skip
+      | Skip -> ([], env)
+      | Seq (e1, e2) ->
+          let (result1, env1) = ceval_exec_helper env e1 in
+          let (result2, env2) = ceval_exec_helper env1 e2 in
+          print_endline ("Result1: " ^ String.concat "; " (List.map string_of_int result1));
+          print_endline ("Result2: " ^ String.concat "; " (List.map string_of_int result2));
+          (result1 @ result2, env2)
+      | IfElse (b, e1, e2) ->
+          if beval env b then
+            ceval_exec_helper env e1
           else
-            acc
-        in loop env acc
-  in
-  let result = eval_helper c empty_env [] in
-  result
+            ceval_exec_helper env e2
+      | While (b, e) ->
+          print_endline "in while";
+          let ifeval = beval env b in
+          print_endline (string_of_bool ifeval);
+          if ifeval then
+            (
+              print_endline "in if";
+              let (result, updated_env) = ceval_exec_helper env e in
+              let (final_result, final_env) = ceval_exec_helper updated_env (While (b, e)) in
+              (result @ final_result, final_env)
+            )
+          else
+            ([], env)
+    in
+    let (result, final_env) = ceval_exec_helper empty_env c in
+    print_endline ("Final Result: " ^ String.concat "; " (List.map string_of_int result));
+    result
 
-
+    
   let _ =
   let ax = Var "x" in
   let ay = Var "y" in
@@ -270,7 +282,7 @@ let ceval (c : cmd) : int list =
                     Seq(Asgn("x", Minus(ax, a1)),
                     Seq(Output(ay), Asgn("y", Plus(ay, a1))))))) in
   assert (ceval c = [5; 0; 4; 1; 3; 2; 2; 3; 1; 4]) 
-  (* 
+  (*
   *)
 
 (**************************************************************************************************)
@@ -362,6 +374,14 @@ let impEval : string -> int list =
        Is the grammar of commands unambiguous? If yes, then explain. If not, present a command which
        can be parsed in two different ways.
 
+       ANSWER:
+         The grammar in this language is unambiguous. There are two possible breakdowns for cmd 
+         which are `cmd ; cmd` and `if bexp then cmd else cmd fi`. There is no way in which the
+         rules can be confused. 
+         Consider the example `if bexp then cmd else cmd fi; cmd`. 
+         There is no other way for this to be parsed except to break this down into `cmd1 ; cmd2`
+         where cmd1 = `if bexp then cmd else cmd fi` and cmd2 = `cmd`.
+
    4b. A language of (only) conditionals, Version II
 
          cmd ::= "skip"
@@ -373,6 +393,15 @@ let impEval : string -> int list =
 
        Is the grammar of commands unambiguous? If yes, then explain. If not, present a command which
        can be parsed in two different ways.
+       
+       ANSWER:
+         The grammar in Version II is ambiguous. 
+         Consider the command `if bexp then cmd else cmd; cmd`. 
+         Unlike Version I of the language, we can see here that there are two ways to break the 
+         command down. 
+         1. The first way to break it down is `if bexp then cmd else cmd0` where cmd0 = `cmd ; cmd`.
+         2. The second way to break it down is `cmd1 ; cmd2` where cmd1 = `if bexp then cmd else cmd`
+       and cmd2 = `cmd`.
 
        Note that the only difference between the two grammars in Questions 4a and 4b is the keyword
        "fi" in Version I which delineates the end of a conditional statement. *)
