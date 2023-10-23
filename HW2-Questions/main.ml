@@ -92,6 +92,7 @@ let eval_of_str : string -> int =
 let _ =
   let _ = assert (eval_of_str "2 * 3 + 5" = 11) in
   let _ = assert (eval_of_str "2 + 5 * 3" = 17) in
+  let _ = assert (eval_of_str "2 - 5 - 3" = -6) in
   ()
 
 (**************************************************************************************************)
@@ -136,9 +137,17 @@ let empty_env = StringMap.empty
    you may use to test your solutions. *)
 
 let rec aeval (env : env_t) (a : aexp) : int =
-  raise NotImplemented
+  match a with 
+    | Int (n) -> n 
+    | Var (x) -> ( 
+        match (StringMap.find_opt x env) with
+        | None -> 0
+        | Some v -> v
+    )
+    | Plus (e1, e2) -> (aeval env e1) + (aeval env e2) 
+    | Minus (e1, e2) -> (aeval env e1) - (aeval env e2)
 
-(* let _ =
+  let _ =
   let env0 = empty_env in
   let env1 = StringMap.add "x" 5 env0 in
 
@@ -152,12 +161,39 @@ let rec aeval (env : env_t) (a : aexp) : int =
   let _ = assert ((aeval env1 a2) = 5) in
   let _ = assert ((aeval env0 a3) = 6) in
   let _ = assert ((aeval env1 a4) = 2) in
-  () *)
+  () 
+(* 
+*)
 
 let rec beval (env : env_t) (b : bexp) : bool =
-  raise NotImplemented
+  match b with 
+  | Bool(f) -> f 
+  | Lt (e1, e2) -> 
+      if (aeval env e1 < aeval env e2) 
+      then true 
+      else false
+  | Leq (e1, e2) -> 
+      if (aeval env e1 <= aeval env e2) 
+      then true 
+      else false
+  | Eq (e1, e2) -> 
+			if (aeval env e1 = aeval env e2)
+			then true 
+			else false
+  | And (b1, b2) -> 
+			if ((beval env b1) && (beval env b2))
+			then true 
+			else false
+  | Or (b1, b2) -> 
+			if ((beval env b1) || (beval env b2))
+			then true 
+			else false
+  | Not (b) -> 
+			if (beval env b)
+			then false 
+			else true
 
-(* let _ =
+  let _ =
   let env0 = empty_env in
   let env1 = StringMap.add "x" 3 env0 in
   let env2 = StringMap.add "y" 5 env1 in
@@ -180,7 +216,9 @@ let rec beval (env : env_t) (b : bexp) : bool =
   let _ = assert (beval env2 b5) in
   let _ = assert (beval env2 b6) in
   let _ = assert (beval env2 b7) in
-  () *)
+  () 
+(* 
+*)
 
 let ceval (c : cmd) : int list =
   raise NotImplemented

@@ -17,33 +17,37 @@ let underscore = '_'
 let whitespace = [' ' '\t']+
 let newline = '\n'
 
-let integer = ['-' | digit][digit]*
-let booleans = ["true" | "false"]
-let variable_identifier = [underscore | alphabet][underscore | alphabet | digit]*
+let integer = ('-' | digit)(digit)*
+let booleans = ("true" | "false")
+let variable_identifier = (underscore | alphabet)(underscore | alphabet | digit)*
 
 rule read =
   parse
   | whitespace { read lexbuf }
   | newline { next_line lexbuf; read lexbuf }
-
-  | integer { INT(int_of_string(Lexing.lexeme lexbuf)) }
-  | variable_identifier { VAR(Lexing.lexeme lexbuf) }
-
-  | booleans { BOOL(bool_of_string(Lexing.lexeme lexbuf)) }
-
-  | '+' { PLUS }
-  | '-' { MINUS }
-
-  | '<' { LT }
-  | '=' { EQ }
-  | "<=" { LEQ }
-  | "&&" { AND }
-  | "||" { OR }
-  | '!' { NOT }
+  | '(' { LPAREN }
+  | ')' { RPAREN }
 
   | "output" { OUTPUT }
   | "skip" { SKIP }
   | ";" { SEQ }
+
+  | integer { INT(int_of_string(Lexing.lexeme lexbuf)) }
+  | variable_identifier { VAR(Lexing.lexeme lexbuf) }
+
+  | '=' { ASGN }
+
+  | '+' { PLUS }
+  | '-' { MINUS }
+
+  | booleans { BOOL(bool_of_string(Lexing.lexeme lexbuf)) }
+
+  | '<' { LT }
+  | "=" { EQ }
+  | "<=" { LEQ }
+  | "&&" { AND }
+  | "||" { OR }
+  | '!' { NOT }
 
   | "if" { IF }
   | "then" { THEN }
@@ -54,7 +58,5 @@ rule read =
   | "do" { DO }
   | "done" { DONE }
 
-  | '(' { LPAREN }
-  | ')' { RPAREN }
   | eof { EOF }
   | _ { raise (SyntaxError("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
