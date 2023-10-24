@@ -8,7 +8,7 @@ Due: 10pm PT on 23 October, 2023
 
 (***************************************************************************************************
 - Your name: Vineet Agarwal
-- Your partner's name (if any): __________
+- Your partner's name (if any): Aaron Darik
 ***************************************************************************************************)
 
 (***************************************************************************************************
@@ -772,4 +772,4 @@ let get_type_test (env : value StringMap.t) (e : expr) =
 (* Question 8: Conclusion (0 points)
 
    Did you use an LLM to solve this assignment? How did it help?
-   ____________ *)
+   No *)
