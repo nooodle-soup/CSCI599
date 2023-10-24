@@ -97,7 +97,7 @@ let _ =
   let _ = assert (eval_of_str "2 - 5 - 3" = -6) in
   ()
 
-(**************************************************************************************************)
+(**************************************************************************************************) 
 (* Question 2: Interpreting an Imperative Language, Part 1 (3 + 3 + 4 points)
 
    In this question and the next, we will build an end-to-end interpreter for a toy imperative
@@ -171,33 +171,43 @@ let rec beval (env : env_t) (b : bexp) : bool =
   match b with 
   | Bool(f) -> f 
   | Lt (e1, e2) -> 
-      print_endline "in lt";
       let aeval_e1 = aeval env e1 in
-      print_endline (string_of_int aeval_e1);
       let aeval_e2 = aeval env e2 in
-      print_endline (string_of_int aeval_e2);
       let eval_res = aeval_e1 < aeval_e2 in
       if eval_res 
       then true 
       else false
   | Leq (e1, e2) -> 
-      if aeval env e1 <= aeval env e2
+      let aeval_e1 = aeval env e1 in
+      let aeval_e2 = aeval env e2 in
+      let eval_res = aeval_e1 <= aeval_e2 in
+      if eval_res
       then true 
       else false
   | Eq (e1, e2) -> 
-			if aeval env e1 = aeval env e2
+      let aeval_e1 = aeval env e1 in
+      let aeval_e2 = aeval env e2 in
+      let eval_res = aeval_e1 = aeval_e2 in
+			if eval_res
 			then true 
 			else false
-  | And (b1, b2) -> 
-			if beval env b1 && beval env b2
+  | And (e1, e2) -> 
+      let beval_e1 = beval env e1 in
+      let beval_e2 = beval env e2 in
+      let eval_res = beval_e1 && beval_e2 in
+			if eval_res
 			then true 
 			else false
-  | Or (b1, b2) -> 
-			if beval env b1 || beval env b2
+  | Or (e1, e2) -> 
+      let beval_e1 = beval env e1 in
+      let beval_e2 = beval env e2 in
+      let eval_res = beval_e1 || beval_e2 in
+			if eval_res
 			then true 
 			else false
-  | Not (b) -> 
-			if beval env b
+  | Not (e1) -> 
+      let beval_e = beval env e1 in
+			if beval_e
 			then false 
 			else true
 
@@ -233,7 +243,9 @@ let ceval (c : cmd) : int list =
       match c with
       | Output(e) -> 
           let eval_result = aeval env e in
+          (*
           print_endline (string_of_int eval_result); 
+          *)
           ([eval_result], env)
       | Asgn(s, e) ->
           let value = aeval env e in
@@ -243,8 +255,10 @@ let ceval (c : cmd) : int list =
       | Seq (e1, e2) ->
           let (result1, env1) = ceval_exec_helper env e1 in
           let (result2, env2) = ceval_exec_helper env1 e2 in
+          (*
           print_endline ("Result1: " ^ String.concat "; " (List.map string_of_int result1));
           print_endline ("Result2: " ^ String.concat "; " (List.map string_of_int result2));
+          *)
           (result1 @ result2, env2)
       | IfElse (b, e1, e2) ->
           if beval env b then
@@ -252,12 +266,18 @@ let ceval (c : cmd) : int list =
           else
             ceval_exec_helper env e2
       | While (b, e) ->
+          (*
           print_endline "in while";
+          *)
           let ifeval = beval env b in
+          (*
           print_endline (string_of_bool ifeval);
+          *)
           if ifeval then
             (
+              (*
               print_endline "in if";
+              *)
               let (result, updated_env) = ceval_exec_helper env e in
               let (final_result, final_env) = ceval_exec_helper updated_env (While (b, e)) in
               (result @ final_result, final_env)
@@ -266,7 +286,9 @@ let ceval (c : cmd) : int list =
             ([], env)
     in
     let (result, final_env) = ceval_exec_helper empty_env c in
+    (*
     print_endline ("Final Result: " ^ String.concat "; " (List.map string_of_int result));
+    *)
     result
 
     
@@ -338,14 +360,15 @@ let ceval (c : cmd) : int list =
    of an Imp program as input, and produces its list of integers as output. *)
 
 let parse : string -> cmd =
-  fun str -> raise NotImplemented
+  fun str -> str |> Lexing.from_string |> Impparser.prog Implexer.read
 
 let impEval : string -> int list =
   fun str -> str |> parse |> ceval
 
 (* At this point, we will test your implementation with: *)
 
-(* let _ =
+(* 
+  let _ =
   let cs = "x = 5;
             while (0 < x) do
               output x;
@@ -353,7 +376,11 @@ let impEval : string -> int list =
               output y;
               y = y + 1
             done" in
-  assert (impEval cs = [5; 0; 4; 1; 3; 2; 2; 3; 1; 4]) *)
+  (*
+  parse cs
+  *)
+  assert (impEval cs = [5; 0; 4; 1; 3; 2; 2; 3; 1; 4])
+  *)
 
 (**************************************************************************************************)
 (* Question 4: Identifying Ambiguous Grammers (5 + 5 points)
@@ -412,16 +439,46 @@ let impEval : string -> int list =
    Consider the following pairs of regular expressions. For each pair, can you provide an example of
    a string which is accepted by one but not accepted by the other? If no such string exists, can
    you explain why not?
+   
+   NOTE: The following arguments hold if the regex is looking for exact matches only. 
 
    5a. a* . b* and (a | b)*
+        They are not the same as 'aba' matches the second pattern but not the first. 
 
    5b. a* . ( b* | c* ) and ( a* . b* ) | ( a* . c* )
+        They are the same. 
+        The first pattern means:
+          a concatenation of zero of more consecutive occurences of a's and 
+          zero of more consecutive occurencess of b's OR c's. 
+        The second pattern means:
+          a concatenation of zero of more consecutive occurences of a's and 
+          zero of more consecutive occurences of b's
+          OR a concatenation of zero of more consecutive occurences of a's 
+          and zero of more consecutive occurences of c's. 
+        Both of these mean the same and are therefore the same patterns.
 
    5c. a* and (a | aa)*
+        They are the same. 
+        The first pattern is zero of more consecutive occurences of a's. 
+        The second pattern is zero of more consecutive occurences of a's 
+        OR zero of more consecutive occurences of aa's. 
+        As the second pattern has the first pattern in it in an or, they will be the same.
 
    5d. a* . a* and a*
+        The patterns are the same. 
+        The first pattern is a concatenation of zero of more consecutive occurences of a's 
+        and zero of more consecutive occurences of a's. 
+        The second pattern is zero of more consecutive occurences of a's. 
+        These both are the same as the first pattern can be considered as zero of more 
+        consecutive occurences of a's followed by no a's which would be the same as the second pattern.
 
-   5e. a* and ( a* )* *)
+   5e. a* and ( a* )* 
+        The patterns are the same. 
+        The second pattern reads as a repetition of zero of more consecutive occurences 
+        of a's, zero of more consecutive occurences of times. This can be modified to be read 
+        as a singular a repeated zero of more consecutive occurences of times.
+        This is the same as the first pattern.
+*)
 
 (**************************************************************************************************)
 (* Question 6: Matching Regular Expressions in Linear Time (5 + 5 + 5 points)
@@ -441,24 +498,94 @@ let list_of_string : string -> char list =
 
 (* - Write a program that determines whether a given string matches the pattern "Hi"*: *)
 
-let (* rec? *) matchesHiStar : string -> bool =
-  fun str ->
-    raise NotImplemented
+let matchesHiStar : string -> bool =
+  let rec helper l = 
+    match l with
+    | [] -> true
+    | 'H' :: 'i' :: rest -> helper rest 
+    | _ -> false
+  in
+  fun str -> helper (list_of_string str)
+
+let _ = 
+  let _ = assert (matchesHiStar "HiHiHi") in 
+  let _ = assert ((matchesHiStar "HiHello") = false) in
+  ()
+
+let matchesHelloStar : string -> bool =
+  let rec helper l =
+    match l with
+    | [] -> true
+    | 'H' :: 'e' :: 'l' :: 'l' :: 'o' :: rest -> helper rest
+    | _ -> false
+  in
+  fun str -> helper (list_of_string str)
+
+let _ = 
+  let _ = assert (matchesHelloStar "HelloHelloHello") in 
+  let _ = assert ((matchesHelloStar "HelloHi") = false) in
+  ()
 
 (* - Write a program that determines whether a given string matches the pattern
      ("Hi" | "Hello")*: *)
 
-let (* rec? *) matchesHiOrHelloStar : string -> bool =
-  fun str ->
-    raise NotImplemented
+let matchesHiOrHelloStar : string -> bool =
+  let rec helper l = 
+    match l with
+    | [] -> true
+    | 'H' :: 'i' :: rest -> matchesHiStar (String.of_seq (List.to_seq rest))
+    | 'H' :: 'e' :: 'l' :: 'l' :: 'o' :: rest -> matchesHelloStar (String.of_seq (List.to_seq rest))
+    | _ -> false
+  in
+  fun str -> helper (list_of_string str)
+
+let _ = 
+  let _ = assert (matchesHiOrHelloStar "HiHiHi") in 
+  let _ = assert (matchesHiOrHelloStar "HelloHello") in 
+  let _ = assert ((matchesHiOrHelloStar "HiHello") = false) in
+  ()
 
 (* - Write a program that determines whether a given string matches the pattern
      ("Hi" | "Hello")* . "Okay"*: *)
 
-let (* rec? *) matchesHiOrHelloStarThenOkayStar : string -> bool =
-  fun str ->
-    raise NotImplemented
+let rec matchesHiOrHelloStarThenOkayStar : string -> bool =
+  let rec checkConsecutiveHi l =
+    match l with 
+    | [] -> []
+    | 'H' :: 'i' :: rest -> checkConsecutiveHi rest
+    | _ -> l
+  in
+  let rec checkConsecutiveHello l =
+    match l with 
+    | [] -> []
+    | 'H' :: 'e' :: 'l' :: 'l' :: 'o' :: rest -> checkConsecutiveHello rest 
+    | _ -> l
+  in
+  let rec checkConsecutiveOkay l =
+    match l with 
+    | [] -> []
+    | 'O' :: 'k' :: 'a' :: 'y' :: rest -> checkConsecutiveOkay rest
+    | _ -> l
+  in
+  let check l =
+    if List.length (checkConsecutiveHi l |> checkConsecutiveOkay) = 0 then 
+      true
+    else
+      if List.length (checkConsecutiveHello l |> checkConsecutiveOkay) > 0 then
+        false
+      else
+        true
+  in
+  fun str -> check (list_of_string str)
 
+let _ = 
+  let _ = assert (matchesHiOrHelloStarThenOkayStar "HiHiHi") in 
+  let _ = assert (matchesHiOrHelloStarThenOkayStar "HiOkayOkay") in 
+  let _ = assert (matchesHiOrHelloStarThenOkayStar "HelloHello") in 
+  let _ = assert (matchesHiOrHelloStarThenOkayStar "HelloOkayOkay") in 
+  let _ = assert ((matchesHiOrHelloStarThenOkayStar "HiHello") = false) in
+  let _ = assert ((matchesHiOrHelloStarThenOkayStar "HiHelloOkay") = false) in
+  ()
 (**************************************************************************************************)
 (* Question 7: A Simple Type Checker (15 points)
 
@@ -587,8 +714,34 @@ type env_type = expr_type StringMap.t
    (IntVal _) in conforming environments, and if it returns (Some BoolType), then evaluating the
    expression should always result in a value of type (BoolVal _). *)
 
-let (* rec? *) get_type (gamma : env_type) (e : expr) : expr_type option =
-  raise NotImplemented
+let rec get_type (gamma : env_type) (e : expr) : expr_type option =
+  match e with
+  | Var v -> StringMap.find_opt v gamma 
+  | IntLit _ -> Some IntType
+  | Plus(e1, e2) 
+  | Minus(e1, e2)
+  | Leq(e1, e2) -> (
+      match (get_type gamma e1, get_type gamma e2) with
+      | (Some IntType, Some IntType) -> Some IntType
+      | _ -> None
+    )
+  | BoolLit _ -> Some BoolType
+  | And(e1, e2) 
+  | Or(e1, e2) -> (
+      match (get_type gamma e1, get_type gamma e2) with
+      | (Some BoolType, Some BoolType) -> Some BoolType
+      | _ -> None
+    )
+  | Not e1 -> (
+      match get_type gamma e1 with
+      | Some BoolType -> Some BoolType
+      | _ -> None
+    )
+  | IfThenElse(e1, e2, e3) -> (
+      match (get_type gamma e1, get_type gamma e2, get_type gamma e3) with
+      | (Some BoolType, Some t2, Some t3) when t2 = t3 -> Some t2
+      | _ -> None
+    )
 
 (* If your solution is correct, then the following assertions will hold for all
    expressions e and environments env: *)

@@ -43,6 +43,9 @@ prog:
 cmd1:
   | cmd1; SEQ; cmd  { Imp.Seq($1, $3) } 
   | cmd             { $1 }
+  (*
+  | cmd; SEQ        { $1 }
+  *)
   ;
 
 cmd:
@@ -65,6 +68,7 @@ aexpr1:
 aexpr:
   | LPAREN; aexpr1; RPAREN { $2 }
   | INT { Imp.Int $1 }
+  | VAR { Imp.Var $1 }
   ;
 
 bexpr3:
